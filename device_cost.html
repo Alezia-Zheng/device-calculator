@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Device Cost｜设备日费</title>
+<style>
+:root{--bg:#f5f5f7;--card:#fff;--text:#171717;--muted:#8a8a8f;--line:#e7e7ea;--accent:#111}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif}
+.app{max-width:520px;margin:auto;min-height:100vh;padding:24px 18px 92px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.brand{font-weight:700;font-size:20px;letter-spacing:-.5px}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+h1{font-size:42px;line-height:1;margin:8px 0 7px;letter-spacing:-2px}.hero{padding:20px 4px 26px}.hero p{margin:0;color:var(--muted);font-size:14px}
+.actions{display:flex;gap:10px}.btn{border:0;border-radius:15px;padding:13px 17px;font-size:14px;font-weight:650;cursor:pointer;background:#111;color:#fff}.btn.light{background:#fff;color:#111;border:1px solid var(--line)}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 12px;font-size:15px;font-weight:700}.count{color:var(--muted);font-weight:500}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:17px;margin-bottom:10px;box-shadow:0 1px 2px #00000005}.device{display:flex;gap:14px;align-items:center}.icon{width:48px;height:48px;border-radius:15px;background:#f0f0f2;display:grid;place-items:center;font-size:23px}.name{font-weight:700;font-size:16px}.meta{font-size:12px;color:var(--muted);margin-top:4px}.cost{margin-left:auto;text-align:right}.cost b{font-size:18px}.cost span{display:block;font-size:11px;color:var(--muted);margin-top:3px}.progress{height:5px;background:#eee;border-radius:9px;margin-top:15px;overflow:hidden}.bar{height:100%;background:#111;border-radius:9px}.empty{text-align:center;color:var(--muted);padding:42px 10px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.stat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px}.stat .label{font-size:12px;color:var(--muted)}.stat strong{display:block;font-size:20px;margin-top:7px}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;padding:0}.modal.show{display:flex}.sheet{width:min(520px,100%);background:#fff;border-radius:25px 25px 0 0;padding:20px 18px 30px;max-height:92vh;overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{border:0;background:#f1f1f3;width:34px;height:34px;border-radius:50%;font-size:20px}
+label{display:block;font-size:12px;color:#666;margin:13px 0 7px}input,select{width:100%;padding:13px;border:1px solid #ddd;border-radius:13px;background:#fafafa;font-size:15px;outline:none}input:focus,select:focus{border-color:#111;background:#fff}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.preview{background:#f6f6f7;border-radius:16px;padding:14px;margin:15px 0;font-size:13px}.preview strong{font-size:21px;display:block;margin-top:4px}.danger{color:#b00020;background:none;border:0;padding:10px;cursor:pointer}
+nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffeF;border-top:1px solid var(--line);backdrop-filter:blur(15px);display:flex;justify-content:center}.navin{width:min(520px,100%);display:flex;justify-content:space-around;padding:10px 20px calc(10px + env(safe-area-inset-bottom))}.navbtn{background:none;border:0;color:#999;font-size:11px;cursor:pointer}.navbtn.active{color:#111;font-weight:700}.navbtn div{font-size:19px;margin-bottom:3px}
+.toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 15px;border-radius:12px;font-size:13px;display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div><div class="brand">DEVICE COST</div><div class="sub">我的电子设备 · 人民币 ¥</div></div><button class="btn" onclick="openModal()">＋ 添加设备</button></div>
+
+  <section id="overview">
+    <div class="hero">
+      <div class="sub">你的电子设备 · 每日预计成本</div>
+      <h1 id="daily">¥0.00</h1>
+      <p id="monthly">每月约 ¥0.00 · 每年约 ¥0.00</p>
+    </div>
+    <div class="section-title">我的设备 <span class="count" id="count">0 件</span></div>
+    <div id="list"></div>
+    <div class="stats">
+      <div class="stat"><div class="label">设备总价值</div><strong id="total">¥0.00</strong></div>
+      <div class="stat"><div class="label">平均每日成本</div><strong id="avg">¥0.00</strong></div>
+    </div>
+  </section>
+
+  <section id="buy" style="display:none">
+    <div class="hero"><div class="sub">想买的设备</div><h1>购买模拟</h1><p>先看看它会让你的每日成本增加多少。</p></div>
+    <div class="card">
+      <label>设备名称</label><input id="simName" placeholder="例如：Sony A7 V">
+      <div class="row"><div><label>价格（¥）</label><input id="simPrice" type="number" value="3000"></div><div><label>预计残值（¥）</label><input id="simResidual" type="number" value="500"></div></div>
+      <label>预计使用年限</label><input id="simYears" type="number" value="4" step="0.5" min="0.5">
+      <div class="preview">预计每日成本<strong id="simDaily">¥1.71 / 天</strong><span id="simMonthly">每月约 ¥52.08</span></div>
+    </div>
+  </section>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+ <div class="sheet">
+  <div class="sheet-head"><b>添加设备</b><button class="close" onclick="closeModal()">×</button></div>
+  <label>设备名称</label><input id="name" placeholder="例如：iPhone 17 Pro">
+  <div class="row"><div><label>品牌</label><input id="brand" placeholder="Apple"></div><div><label>类别</label><select id="category"><option>📱 手机</option><option>💻 电脑</option><option>📟 平板</option><option>🎧 耳机</option><option>📷 相机</option><option>⌚ 手表</option><option>🎮 游戏机</option><option>🔌 其他</option></select></div></div>
+  <div class="row"><div><label>购买价格（¥）</label><input id="price" type="number" placeholder="12999"></div><div><label>预计残值（¥）</label><input id="residual" type="number" value="0"></div></div>
+  <div class="row"><div><label>购买日期</label><input id="date" type="date"></div><div><label>预计使用年限</label><input id="years" type="number" value="4" step="0.5" min="0.5"></div></div>
+  <div class="preview">预计每日成本<strong id="previewDaily">¥0.00 / 天</strong><span id="previewMonthly">输入价格后自动计算</span></div>
+  <button class="btn" style="width:100%" onclick="addDevice()">保存设备</button>
+ </div>
+</div>
+
+<nav><div class="navin"><button class="navbtn active" onclick="tab('overview',this)"><div>⌂</div>总览</button><button class="navbtn" onclick="tab('buy',this)"><div>＋</div>想买</button></div></nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='device-cost-cn-v1';
+let devices=JSON.parse(localStorage.getItem(KEY)||'[]');
+const $=id=>document.getElementById(id);
+function money(n){return '¥'+Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function calc(d){let days=Math.max(1,Number(d.years)*365);return Math.max(0,(Number(d.price)-Number(d.residual||0))/days)}
+function render(){
+ $('count').textContent=devices.length+' 件';
+ const daily=devices.reduce((s,d)=>s+calc(d),0);
+ $('daily').textContent=money(daily); $('monthly').textContent='每月约 '+money(daily*30.4375)+' · 每年约 '+money(daily*365);
+ $('total').textContent=money(devices.reduce((s,d)=>s+Number(d.price),0));
+ $('avg').textContent=money(devices.length?daily/devices.length:0);
+ $('list').innerHTML=devices.length?devices.map((d,i)=>{
+   const c=calc(d), used=Math.max(0,(Date.now()-new Date(d.date).getTime())/86400000), pct=Math.min(100,used/(Number(d.years)*365)*100);
+   return `<div class="card"><div class="device"><div class="icon">${d.category.split(' ')[0]}</div><div><div class="name">${esc(d.name)}</div><div class="meta">${esc(d.brand||'')} · ${money(d.price)}</div></div><div class="cost"><b>${money(c)}</b><span>/ 天</span></div></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="meta" style="display:flex;justify-content:space-between;margin-top:8px"><span>预计使用 ${d.years} 年</span><button class="danger" onclick="removeDevice(${i})">删除</button></div></div>`
+ }).join(''):'<div class="card empty">还没有设备<br><span style="font-size:12px">点击右上角「添加设备」开始记录</span></div>';
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function openModal(){$('modal').classList.add('show');$('date').value=new Date().toISOString().slice(0,10)}
+function closeModal(){$('modal').classList.remove('show')}
+function addDevice(){
+ const d={name:$('name').value.trim(),brand:$('brand').value.trim(),category:$('category').value,price:Number($('price').value),residual:Number($('residual').value||0),date:$('date').value,years:Number($('years').value)};
+ if(!d.name||!d.price||!d.date||!d.years){toast('请填写设备名称、价格、日期和使用年限');return}
+ devices.push(d);localStorage.setItem(KEY,JSON.stringify(devices));render();closeModal();toast('设备已添加');
+ ['name','brand','price'].forEach(x=>$(x).value=''); $('residual').value=0;$('years').value=4;
+}
+function removeDevice(i){if(confirm('确定删除这件设备吗？')){devices.splice(i,1);localStorage.setItem(KEY,JSON.stringify(devices));render();}}
+function updatePreview(){
+ const p=Number($('price').value||0),r=Number($('residual').value||0),y=Number($('years').value||0),d=y?p-r>0?(p-r)/(y*365):0:0;
+ $('previewDaily').textContent=money(d)+' / 天';$('previewMonthly').textContent='每月约 '+money(d*30.4375);
+}
+function updateSim(){const p=Number($('simPrice').value||0),r=Number($('simResidual').value||0),y=Number($('simYears').value||0),d=y?Math.max(0,p-r)/(y*365):0;$('simDaily').textContent=money(d)+' / 天';$('simMonthly').textContent='每月约 '+money(d*30.4375)}
+function tab(id,el){['overview','buy'].forEach(x=>$(x).style.display=x===id?'block':'none');document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));el.classList.add('active')}
+function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
+['price','residual','years'].forEach(x=>$(x).addEventListener('input',updatePreview));
+['simPrice','simResidual','simYears'].forEach(x=>$(x).addEventListener('input',updateSim));
+render();updateSim();
+</script>
+</body></html>
